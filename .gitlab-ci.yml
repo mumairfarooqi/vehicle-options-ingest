@@ -1,0 +1,25 @@
+image: "eu.gcr.io/breuninger-dataprocessing-dev/vers/base-airflow:latest"
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+test:
+  stage: test
+  script:
+    - airflow initdb
+    - black --check .
+    - PYTHONPATH=. pytest
+
+dev:
+  stage: deploy
+  only:
+    - /^dev.*$/
+  script:
+    - gsutil cp -r ./vehicle_options_ingest* gs://$airflow_bucket_dev/dags/
+
+prod:
+  stage: deploy
+  only:
+    - master
+  script:
+    - gsutil cp -r ./vehicle_options_ingest* gs://$airflow_bucket_prod/dags/
